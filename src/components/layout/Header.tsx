@@ -1,6 +1,5 @@
 import React from 'react';
 import { Bell, Search, User } from 'lucide-react';
-import { Badge } from '../ui/Badge';
 
 interface HeaderProps {
   pageName: string;

@@ -1,6 +1,6 @@
-# HealthRemind - Patient Follow-Up System
+# CareSync- Patient Follow-Up System
 
-HealthRemind is a comprehensive healthcare follow-up reminder system designed to help clinics and private doctors effectively manage patient appointments and follow-ups. The system provides automated reminders through multiple communication channels while maintaining a clean, intuitive interface.
+CareSync is a comprehensive healthcare follow-up reminder system designed to help clinics and private doctors effectively manage patient appointments and follow-ups. The system provides automated reminders through multiple communication channels while maintaining a clean, intuitive interface.
 
 ## Features
 
@@ -79,10 +79,6 @@ src/
 5. Create a Pull Request
 
 ## Future Enhancements
-
-- Authentication system
-- Database integration
-- Analytics dashboard
 - Advanced reminder rules
 - Integration with medical record systems
 - Mobile application
