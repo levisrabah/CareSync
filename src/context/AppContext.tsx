@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Patient, Appointment } from '../types';
+import { Patient, Appointment, Doctor, ReminderTemplate } from '../types';
+import { doctors, reminderTemplates } from '../data/mockData';
 
 interface AppContextType {
   currentPage: string;
@@ -14,6 +15,18 @@ interface AppContextType {
   handleViewAllAppointments: () => void;
   handleViewAllReminders: () => void;
   handleRescheduleAppointment: (appointment: Appointment) => void;
+  isPatientModalOpen: boolean;
+  setIsPatientModalOpen: (isOpen: boolean) => void;
+  isAppointmentModalOpen: boolean;
+  setIsAppointmentModalOpen: (isOpen: boolean) => void;
+  isReminderModalOpen: boolean;
+  setIsReminderModalOpen: (isOpen: boolean) => void;
+  selectedAppointment: Appointment | null;
+  setSelectedAppointment: (appointment: Appointment | null) => void;
+  selectedPatient: Patient | null;
+  setSelectedPatient: (patient: Patient | null) => void;
+  availableDoctors: Doctor[];
+  reminderTemplates: ReminderTemplate[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -21,31 +34,40 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
   };
 
   const handleSignOut = () => {
-    // In a real app, this would handle authentication
     alert('Sign out functionality will be implemented with authentication');
   };
 
   const handleScheduleAppointment = (patient?: Patient) => {
-    setCurrentPage('appointments');
-    alert(`Schedule appointment${patient ? ` for ${patient.name}` : ''}`);
+    if (patient) {
+      setSelectedPatient(patient);
+    }
+    setIsAppointmentModalOpen(true);
   };
 
   const handleSendReminder = (appointment: Appointment) => {
-    alert(`Sending reminder for appointment ${appointment.id}`);
+    setSelectedAppointment(appointment);
+    setIsReminderModalOpen(true);
   };
 
   const handleEditPatient = (patient: Patient) => {
-    alert(`Edit patient: ${patient.name}`);
+    setSelectedPatient(patient);
+    setIsPatientModalOpen(true);
   };
 
   const handleAddPatient = () => {
-    alert('Add new patient');
+    setSelectedPatient(null);
+    setIsPatientModalOpen(true);
   };
 
   const handleViewAllAppointments = () => {
@@ -57,7 +79,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const handleRescheduleAppointment = (appointment: Appointment) => {
-    alert(`Reschedule appointment ${appointment.id}`);
+    setSelectedAppointment(appointment);
+    setIsAppointmentModalOpen(true);
   };
 
   return (
@@ -73,7 +96,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       handleAddPatient,
       handleViewAllAppointments,
       handleViewAllReminders,
-      handleRescheduleAppointment
+      handleRescheduleAppointment,
+      isPatientModalOpen,
+      setIsPatientModalOpen,
+      isAppointmentModalOpen,
+      setIsAppointmentModalOpen,
+      isReminderModalOpen,
+      setIsReminderModalOpen,
+      selectedAppointment,
+      setSelectedAppointment,
+      selectedPatient,
+      setSelectedPatient,
+      availableDoctors: doctors,
+      reminderTemplates
     }}>
       {children}
     </AppContext.Provider>
