@@ -3,6 +3,7 @@ import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Appointment, Patient, Doctor } from '../../types';
+import { useApp } from '../../context/AppContext';
 
 interface UpcomingAppointmentsProps {
   appointments: Appointment[];
@@ -22,6 +23,8 @@ export const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
   patients,
   doctors
 }) => {
+  const { handleViewAllAppointments, handleRescheduleAppointment, handleSendReminder } = useApp();
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -36,7 +39,7 @@ export const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
     <Card className="h-full">
       <CardHeader className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900">Upcoming Appointments</h3>
-        <Button variant="outline" size="sm">View All</Button>
+        <Button variant="outline" size="sm" onClick={handleViewAllAppointments}>View All</Button>
       </CardHeader>
       <CardContent className="overflow-hidden">
         <div className="space-y-4">
@@ -71,8 +74,20 @@ export const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">{formatDate(appointment.date)}</p>
                     <div className="flex space-x-2 mt-1">
-                      <Button variant="ghost" size="sm">Reschedule</Button>
-                      <Button variant="primary" size="sm">Send Reminder</Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleRescheduleAppointment(appointment)}
+                      >
+                        Reschedule
+                      </Button>
+                      <Button 
+                        variant="primary" 
+                        size="sm"
+                        onClick={() => handleSendReminder(appointment)}
+                      >
+                        Send Reminder
+                      </Button>
                     </div>
                   </div>
                 </div>

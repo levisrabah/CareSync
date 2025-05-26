@@ -1,6 +1,7 @@
 import React from 'react';
 import { Home, Users, Calendar, Clock, MessageSquare, Settings, LogOut, Menu, X } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useApp } from '../../context/AppContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,6 +25,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNavigate,
   currentPage
 }) => {
+  const { handleSignOut } = useApp();
+
   return (
     <>
       {/* Mobile overlay */}
@@ -94,6 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               fullWidth 
               className="justify-start"
               icon={<LogOut className="h-5 w-5" />}
+              onClick={handleSignOut}
             >
               Sign Out
             </Button>

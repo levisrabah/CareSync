@@ -3,6 +3,7 @@ import { Patient } from '../../types';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Search, UserPlus, Mail, Phone, MessageSquare } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 interface PatientListProps {
   patients: Patient[];
@@ -11,6 +12,7 @@ interface PatientListProps {
 
 export const PatientList: React.FC<PatientListProps> = ({ patients, onPatientSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { handleAddPatient } = useApp();
   
   const filteredPatients = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -49,6 +51,7 @@ export const PatientList: React.FC<PatientListProps> = ({ patients, onPatientSel
           <Button 
             variant="primary"
             icon={<UserPlus className="h-4 w-4" />}
+            onClick={handleAddPatient}
           >
             Add Patient
           </Button>

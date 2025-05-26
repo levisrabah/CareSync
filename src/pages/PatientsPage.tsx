@@ -6,9 +6,11 @@ import { Button } from '../components/ui/Button';
 import { patients, appointments } from '../data/mockData';
 import { Patient, Appointment } from '../types';
 import { Calendar, Clock, AlertCircle, CheckCircle, UserX } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 export const PatientsPage: React.FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const { handleScheduleAppointment, handleEditPatient, handleSendReminder, handleAddPatient } = useApp();
   
   const getPatientAppointments = (patientId: string): Appointment[] => {
     return appointments.filter(appointment => appointment.patientId === patientId);
@@ -60,7 +62,13 @@ export const PatientsPage: React.FC = () => {
                 <CardHeader className="flex flex-col items-start">
                   <div className="w-full flex justify-between items-center mb-2">
                     <h3 className="text-lg font-semibold text-gray-900">Patient Details</h3>
-                    <Button variant="outline" size="sm">Edit</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditPatient(selectedPatient)}
+                    >
+                      Edit
+                    </Button>
                   </div>
                   <div className="flex items-center">
                     <div className="bg-teal-100 p-3 rounded-full">
@@ -132,8 +140,18 @@ export const PatientsPage: React.FC = () => {
                     </div>
                     
                     <div className="flex space-x-2 pt-2">
-                      <Button variant="primary">Schedule Appointment</Button>
-                      <Button variant="outline">Send Reminder</Button>
+                      <Button 
+                        variant="primary"
+                        onClick={() => handleScheduleAppointment(selectedPatient)}
+                      >
+                        Schedule Appointment
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleSendReminder(getPatientAppointments(selectedPatient.id)[0])}
+                      >
+                        Send Reminder
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -148,7 +166,7 @@ export const PatientsPage: React.FC = () => {
                   <p className="text-gray-500 max-w-xs mx-auto mb-4">
                     Select a patient from the list to view their details and manage their appointments.
                   </p>
-                  <Button variant="outline">Add New Patient</Button>
+                  <Button variant="outline" onClick={handleAddPatient}>Add New Patient</Button>
                 </CardContent>
               </Card>
             )}
