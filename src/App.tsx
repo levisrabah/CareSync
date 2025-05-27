@@ -2,18 +2,20 @@ import React from 'react';
 import { DashboardPage } from './pages/DashboardPage';
 import { PatientsPage } from './pages/PatientsPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
+import { LoginPage } from './pages/LoginPage';
 import { Sidebar } from './components/layout/Sidebar';
 import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { PatientModal } from './components/modals/PatientModal';
 import { AppointmentModal } from './components/modals/AppointmentModal';
 import { ReminderModal } from './components/modals/ReminderModal';
 import Modal from 'react-modal';
-import { patients } from './data/mockData';
 
 // Set the app element for react-modal
 Modal.setAppElement('#root');
 
 const MainApp: React.FC = () => {
+  const { user, loading: authLoading } = useAuth();
   const { 
     currentPage, 
     setCurrentPage, 
@@ -31,6 +33,18 @@ const MainApp: React.FC = () => {
     reminderTemplates
   } = useApp();
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
@@ -42,24 +56,6 @@ const MainApp: React.FC = () => {
       default:
         return <DashboardPage />;
     }
-  };
-
-  const handleSavePatient = (patientData: Partial<Patient>) => {
-    console.log('Saving patient:', patientData);
-    setIsPatientModalOpen(false);
-    // In a real app, this would save to the database
-  };
-
-  const handleSaveAppointment = (appointmentData: Partial<Appointment>) => {
-    console.log('Saving appointment:', appointmentData);
-    setIsAppointmentModalOpen(false);
-    // In a real app, this would save to the database
-  };
-
-  const handleSendReminder = (message: string, channel: 'sms' | 'email' | 'whatsapp') => {
-    console.log('Sending reminder:', { message, channel });
-    setIsReminderModalOpen(false);
-    // In a real app, this would send the reminder through the selected channel
   };
 
   return (
@@ -97,7 +93,7 @@ const MainApp: React.FC = () => {
           onClose={() => setIsReminderModalOpen(false)}
           onSend={handleSendReminder}
           appointment={selectedAppointment}
-          patient={patients.find(p => p.id === selectedAppointment.patientId)!}
+          patient={selectedPatient}
           templates={reminderTemplates}
         />
       )}
@@ -107,9 +103,11 @@ const MainApp: React.FC = () => {
 
 function App() {
   return (
-    <AppProvider>
-      <MainApp />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <MainApp />
+      </AppProvider>
+    </AuthProvider>
   );
 }
 
