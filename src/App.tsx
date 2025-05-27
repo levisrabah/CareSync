@@ -15,7 +15,7 @@ import Modal from 'react-modal';
 Modal.setAppElement('#root');
 
 const MainApp: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { 
     currentPage, 
     setCurrentPage, 
@@ -30,7 +30,10 @@ const MainApp: React.FC = () => {
     selectedAppointment,
     selectedPatient,
     availableDoctors,
-    reminderTemplates
+    reminderTemplates,
+    handleSavePatient,
+    handleSaveAppointment,
+    handleSendReminderMessage
   } = useApp();
 
   if (authLoading) {
@@ -58,6 +61,14 @@ const MainApp: React.FC = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar 
@@ -65,6 +76,7 @@ const MainApp: React.FC = () => {
         toggleSidebar={toggleSidebar}
         onNavigate={setCurrentPage}
         currentPage={currentPage}
+        onSignOut={handleSignOut}
       />
       <div className="flex-1 flex flex-col lg:ml-64">
         {renderPage()}
@@ -91,9 +103,9 @@ const MainApp: React.FC = () => {
         <ReminderModal
           isOpen={isReminderModalOpen}
           onClose={() => setIsReminderModalOpen(false)}
-          onSend={handleSendReminder}
+          onSend={handleSendReminderMessage}
           appointment={selectedAppointment}
-          patient={selectedPatient}
+          patient={selectedPatient!}
           templates={reminderTemplates}
         />
       )}

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Patient, Appointment, Doctor, ReminderTemplate } from '../types';
-import { doctors, reminderTemplates } from '../data/mockData';
+import { usePatients } from '../hooks/usePatients';
+import { useAppointments } from '../hooks/useAppointments';
+import * as api from '../services/api';
 
 interface AppContextType {
   currentPage: string;
@@ -27,6 +29,13 @@ interface AppContextType {
   setSelectedPatient: (patient: Patient | null) => void;
   availableDoctors: Doctor[];
   reminderTemplates: ReminderTemplate[];
+  patients: Patient[];
+  patientsLoading: boolean;
+  appointments: Appointment[];
+  appointmentsLoading: boolean;
+  handleSavePatient: (patientData: Partial<Patient>) => Promise<void>;
+  handleSaveAppointment: (appointmentData: Partial<Appointment>) => Promise<void>;
+  handleSendReminderMessage: (message: string, channel: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -39,13 +48,38 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [availableDoctors, setAvailableDoctors] = useState<Doctor[]>([]);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(prev => !prev);
-  };
+  // Use our custom hooks
+  const { 
+    patients, 
+    loading: patientsLoading, 
+    addPatient, 
+    updatePatient 
+  } = usePatients();
+
+  const { 
+    appointments, 
+    loading: appointmentsLoading, 
+    addAppointment, 
+    updateAppointment 
+  } = useAppointments();
+
+  // Fetch doctors on mount
+  React.useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const doctors = await api.getDoctors();
+        setAvailableDoctors(doctors);
+      } catch (error) {
+        console.error('Failed to fetch doctors:', error);
+      }
+    };
+    fetchDoctors();
+  }, []);
 
   const handleSignOut = () => {
-    alert('Sign out functionality will be implemented with authentication');
+    // This will be handled by AuthContext
   };
 
   const handleScheduleAppointment = (patient?: Patient) => {
@@ -83,12 +117,74 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setIsAppointmentModalOpen(true);
   };
 
+  const handleSavePatient = async (patientData: Partial<Patient>) => {
+    try {
+      if (selectedPatient) {
+        await updatePatient(selectedPatient.id, patientData);
+      } else {
+        await addPatient(patientData as Omit<Patient, 'id'>);
+      }
+      setIsPatientModalOpen(false);
+    } catch (error) {
+      console.error('Failed to save patient:', error);
+      throw error;
+    }
+  };
+
+  const handleSaveAppointment = async (appointmentData: Partial<Appointment>) => {
+    try {
+      if (selectedAppointment) {
+        await updateAppointment(selectedAppointment.id, appointmentData);
+      } else {
+        await addAppointment(appointmentData as Omit<Appointment, 'id'>);
+      }
+      setIsAppointmentModalOpen(false);
+    } catch (error) {
+      console.error('Failed to save appointment:', error);
+      throw error;
+    }
+  };
+
+  const handleSendReminderMessage = async (message: string, channel: string) => {
+    if (!selectedAppointment) return;
+
+    try {
+      await api.createReminder({
+        appointmentId: selectedAppointment.id,
+        message,
+        channel,
+        scheduledDate: new Date().toISOString(),
+        status: 'pending'
+      });
+      setIsReminderModalOpen(false);
+    } catch (error) {
+      console.error('Failed to send reminder:', error);
+      throw error;
+    }
+  };
+
+  // Default reminder templates
+  const reminderTemplates: ReminderTemplate[] = [
+    {
+      id: '1',
+      name: 'Standard Follow-up',
+      message: 'Hello {patientName}, this is a reminder of your follow-up appointment on {date} at {time}.',
+      appointmentType: 'Follow-up'
+    },
+    {
+      id: '2',
+      name: 'Annual Check-up',
+      message: 'Hello {patientName}, your annual check-up is scheduled for {date} at {time}.',
+      appointmentType: 'Annual check-up'
+    }
+  ];
+
   return (
     <AppContext.Provider value={{ 
       currentPage, 
       setCurrentPage,
       isSidebarOpen,
-      toggleSidebar,
+      toggleSidebar: () => setIsSidebarOpen(prev => !prev),
       handleSignOut,
       handleScheduleAppointment,
       handleSendReminder,
@@ -107,8 +203,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setSelectedAppointment,
       selectedPatient,
       setSelectedPatient,
-      availableDoctors: doctors,
-      reminderTemplates
+      availableDoctors,
+      reminderTemplates,
+      patients,
+      patientsLoading,
+      appointments,
+      appointmentsLoading,
+      handleSavePatient,
+      handleSaveAppointment,
+      handleSendReminderMessage
     }}>
       {children}
     </AppContext.Provider>
